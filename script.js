@@ -57,7 +57,6 @@
       clearTimeout(Utils._toastTimer);
       Utils._toastTimer = setTimeout(() => el.classList.remove('show'), duration);
     },
-    /** Returns a Promise<boolean> resolved true if the user confirms. */
     confirm(message) {
       return new Promise((resolve) => {
         const overlay = document.getElementById('confirm-modal');
@@ -79,7 +78,6 @@
         cancelBtn.addEventListener('click', onCancel);
       });
     },
-    /** Adds the ripple animation class briefly whenever a .btn is tapped. */
     wireRipple(el) {
       el.addEventListener('pointerdown', (e) => {
         const rect = el.getBoundingClientRect();
@@ -87,14 +85,14 @@
         el.style.setProperty('--ripple-y', (e.clientY - rect.top) + 'px');
         el.classList.remove('rippling');
         // eslint-disable-next-line no-unused-expressions
-        el.offsetWidth; // force reflow so the animation can restart
+        el.offsetWidth;
         el.classList.add('rippling');
       });
     }
   };
 
   /* ================================================================
-     SOUND — tiny synthesized click, avoids needing an audio asset
+     SOUND
      ================================================================ */
   const Sound = {
     ctx: null,
@@ -122,7 +120,7 @@
   };
 
   /* ================================================================
-     SETTINGS — persisted to localStorage, applied as CSS variables
+     SETTINGS
      ================================================================ */
   const SETTINGS_KEY = 'guestbook_settings_v1';
 
@@ -133,21 +131,21 @@
   };
 
   const DEFAULT_SETTINGS = {
-    passwordHash: null,          // null = no password set yet
-    bgImage: null,               // dataURL
-    bgVideo: null,                // dataURL
-    overlayOpacity: 55,          // 0-90
+    passwordHash: null,
+    bgImage: null,
+    bgVideo: null,
+    overlayOpacity: 55,
     overlayColor: '#08080a',
-    greetingAudio: null,         // dataURL
+    greetingAudio: null,
     countdownDuration: 5,
-    countdownStyle: 'numeric',   // 'numeric' | 'phrase'
+    countdownStyle: 'numeric',
     countdownFontSize: 96,
     countdownColor: '#ecd9ad',
     accentColor: '#c9a15a',
     buttonColor: '#c9a15a',
     fontChoice: 'playfair',
     radius: 18,
-    videoAspectRatio: '9:16',   // '9:16' | '16:9' | '1:1' | '4:3'
+    videoAspectRatio: '9:16',
     eyebrow: 'Forever begins today',
     title: 'The Guestbook',
     subtitle: 'Pick up the phone and leave us a memory to keep'
@@ -171,7 +169,7 @@
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.data));
       } catch (err) {
-        console.error('Failed to save settings (storage full?)', err);
+        console.error('Failed to save settings', err);
         Utils.toast('Could not save settings — storage may be full.');
       }
     },
@@ -189,7 +187,6 @@
       this.apply();
     },
 
-    /** Pushes current settings into the live DOM / CSS variables. */
     apply() {
       const root = document.documentElement.style;
       root.setProperty('--accent', this.data.accentColor);
@@ -206,7 +203,6 @@
       root.setProperty('--font-display', fonts.display);
       root.setProperty('--font-body', fonts.body);
 
-      // Background image / video
       const imgEl = document.getElementById('home-bg-image');
       const vidEl = document.getElementById('home-bg-video');
       if (this.data.bgVideo) {
@@ -238,7 +234,6 @@
     };
   }
 
-  /** Very small non-cryptographic hash, sufficient for a kiosk PIN gate. */
   function simpleHash(text) {
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
@@ -249,7 +244,7 @@
   }
 
   /* ================================================================
-     DB — IndexedDB wrapper for saved recordings
+     DB
      ================================================================ */
   const DB = {
     name: 'guestbook_db',
@@ -318,7 +313,6 @@
       return all.sort((a, b) => a.createdAt - b.createdAt)[0].id;
     },
 
-    /** Best-effort browser storage estimate for the home screen pill. */
     async estimate() {
       if (navigator.storage && navigator.storage.estimate) {
         try {
@@ -331,12 +325,8 @@
   };
 
   /* ================================================================
-     CAMERA — getUserMedia handling with front->rear fallback
+     CAMERA
      ================================================================ */
-
-  // Target capture resolution for each admin-selectable aspect ratio.
-  // These are requested as *ideal*, not exact, so the browser still falls
-  // back gracefully on hardware that can't hit them.
   const ASPECT_RESOLUTIONS = {
     '9:16': { width: 1080, height: 1920, ratio: 9 / 16 },
     '16:9': { width: 1920, height: 1080, ratio: 16 / 9 },
@@ -348,9 +338,6 @@
     stream: null,
 
     async start() {
-      // Raw audio, no processing — a bare mic feed just like a native
-      // camera app records, rather than the browser's voice-call-style
-      // cleanup (which can sound processed/artificial on playback).
       const audioConstraints = {
         echoCancellation: false,
         noiseSuppression: false,
@@ -394,7 +381,7 @@
   };
 
   /* ================================================================
-     RECORDER — MediaRecorder wrapper
+     RECORDER
      ================================================================ */
   const Recorder = {
     mediaRecorder: null,
@@ -414,11 +401,6 @@
     start(stream, onTick) {
       this.chunks = [];
       const mimeType = this.pickMimeType();
-      // Bitrates pushed close to what a native camera app records at
-      // (roughly what a phone shoots 1080p video at, and well above the
-      // "safe" web-call defaults browsers otherwise apply). Actual
-      // encoded bitrate is still capped by whatever the device's hardware
-      // encoder can sustain, so this is a ceiling/request, not a guarantee.
       const options = {
         ...(mimeType ? { mimeType } : {}),
         audioBitsPerSecond: 256000,
@@ -428,7 +410,7 @@
       this.mediaRecorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) this.chunks.push(e.data);
       };
-      this.mediaRecorder.start(250); // gather data every 250ms
+      this.mediaRecorder.start(250);
       this.startedAt = Date.now();
       if (onTick) {
         this.timerInterval = setInterval(() => onTick((Date.now() - this.startedAt) / 1000), 250);
@@ -453,7 +435,7 @@
   };
 
   /* ================================================================
-     SCREENS — simple fade/slide screen manager
+     SCREENS
      ================================================================ */
   const Screens = {
     current: 'home',
@@ -466,13 +448,14 @@
   };
 
   /* ================================================================
-     THUMBNAIL — captures a frame from a video element into a dataURL
+     THUMBNAIL
      ================================================================ */
   async function generateThumbnail(blobUrl) {
     return new Promise((resolve) => {
       const video = document.createElement('video');
       video.muted = true;
       video.playsInline = true;
+      video.disablePictureInPicture = true;
       video.src = blobUrl;
       video.currentTime = 0.1;
 
@@ -490,17 +473,16 @@
       };
 
       video.addEventListener('loadeddata', () => {
-        // seeking a touch in guarantees a decoded frame on most browsers
         video.currentTime = Math.min(0.15, (video.duration || 1) / 2);
       });
       video.addEventListener('seeked', finish, { once: true });
       video.addEventListener('error', () => resolve(null), { once: true });
-      setTimeout(finish, 1200); // safety net if events never fire
+      setTimeout(finish, 1200);
     });
   }
 
   /* ================================================================
-     ADMIN — settings panel wiring
+     ADMIN
      ================================================================ */
   const Admin = {
     init() {
@@ -545,7 +527,6 @@
       const hasPassword = !!Settings.data.passwordHash;
 
       if (!hasPassword) {
-        // First run: whatever is typed (including blank) becomes the password
         if (input) Settings.set('passwordHash', simpleHash(input));
         this.enterPanel();
         return;
@@ -708,17 +689,18 @@
   };
 
   /* ================================================================
-     APP — top-level flow controller
+     APP
      ================================================================ */
   const App = {
     activeStream: null,
-    pendingRecording: null,   // { blobUrl, blob, duration, thumbnail }
+    pendingRecording: null,
     wakeLockSentinel: null,
     countdownTimeoutIds: [],
 
     async init() {
       Settings.load();
       Admin.init();
+      this.disablePictureInPictureGlobal();
       this.setViewportHeightVar();
       window.addEventListener('resize', () => this.setViewportHeightVar());
 
@@ -731,15 +713,12 @@
       document.getElementById('btn-playback-back').addEventListener('click', () => { Sound.click(); this.goHome(); });
       document.getElementById('btn-playback-delete').addEventListener('click', () => { Sound.click(); this.deleteFromPlayback(); });
 
-      // Prevent accidental navigation away from the kiosk.
       window.addEventListener('beforeunload', (e) => {
         e.preventDefault();
         e.returnValue = '';
       });
       document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-      // First tap anywhere: unlock fullscreen + wake lock + audio, browsers
-      // require a user gesture before granting these.
       const unlockOnce = () => {
         this.requestFullscreen();
         this.requestWakeLock();
@@ -754,6 +733,19 @@
       Screens.show('home');
     },
 
+    disablePictureInPictureGlobal() {
+      const videoElements = document.querySelectorAll('video');
+      videoElements.forEach((video) => {
+        video.disablePictureInPicture = true;
+        video.setAttribute('disablepictureinpicture', '');
+        video.addEventListener('enterpictureinpicture', (e) => {
+          if (document.exitPictureInPicture) {
+            document.exitPictureInPicture().catch(() => {});
+          }
+        });
+      });
+    },
+
     setViewportHeightVar() {
       document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
     },
@@ -765,7 +757,7 @@
         if (screen.orientation && screen.orientation.lock) {
           screen.orientation.lock('portrait').catch(() => {});
         }
-      } catch (err) { /* fullscreen may be blocked; app still works */ }
+      } catch (err) { /* ignore */ }
     },
 
     async requestWakeLock() {
@@ -778,32 +770,22 @@
             }
           });
         }
-      } catch (err) { /* not fatal */ }
+      } catch (err) { /* ignore */ }
     },
 
     registerServiceWorker() {
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {
-          // Optional — the app already works fully offline once the tab
-          // is loaded, since it has no external network dependencies.
-        });
+        navigator.serviceWorker.register('sw.js').catch(() => {});
       }
     },
 
-    /**
-     * Asks the browser not to auto-evict this site's storage (IndexedDB,
-     * localStorage) under disk-space pressure. Not a guarantee, but it
-     * meaningfully lowers the odds recordings get silently cleared mid-event
-     * on a phone that's also used for other things. Safe to call repeatedly;
-     * a no-op on browsers that don't support the API.
-     */
     async requestPersistentStorage() {
       try {
         if (navigator.storage && navigator.storage.persist) {
           const already = await navigator.storage.persisted();
           if (!already) await navigator.storage.persist();
         }
-      } catch (err) { /* not fatal — best effort only */ }
+      } catch (err) { /* ignore */ }
     },
 
     goHome() {
@@ -813,15 +795,12 @@
       this.refreshRecentList();
     },
 
-    /* ---------- CALL FLOW: greeting → countdown → recording ---------- */
     async startCallFlow() {
       Screens.show('call');
       document.getElementById('call-status-text').textContent = 'Calling…';
       document.getElementById('countdown-display').classList.add('hidden');
       document.getElementById('countdown-display').textContent = '';
 
-      // Start requesting the camera in the background so it's ready
-      // the instant the countdown finishes.
       const cameraPromise = Camera.start().catch((err) => {
         console.error('Camera error', err);
         Utils.toast('Camera/microphone access is required to record.');
@@ -842,12 +821,9 @@
         try {
           await audioEl.play();
         } catch (err) {
-          // Autoplay may be blocked in rare cases — fall back immediately.
           beginCountdown();
         }
       } else {
-        // No greeting configured — brief pause so "Calling…" registers,
-        // then move straight to the countdown.
         this.countdownTimeoutIds.push(setTimeout(beginCountdown, 1200));
       }
     },
@@ -861,7 +837,7 @@
     },
 
     runCountdown(cameraPromise) {
-      if (Screens.current !== 'call') return; // user navigated away
+      if (Screens.current !== 'call') return;
       document.getElementById('call-status-text').textContent = 'Get ready…';
       const display = document.getElementById('countdown-display');
       display.classList.remove('hidden');
@@ -897,11 +873,10 @@
       tick();
     },
 
-    /* ---------- RECORDING ---------- */
     async beginRecording(cameraPromise) {
       const stream = await cameraPromise;
       if (!stream) { this.goHome(); return; }
-      if (Screens.current !== 'call') { Camera.stop(); return; } // navigated away mid-countdown
+      if (Screens.current !== 'call') { Camera.stop(); return; }
 
       this.activeStream = stream;
       Screens.show('recording');
@@ -970,14 +945,6 @@
       this.goHome();
     },
 
-    /**
-     * Triggers a normal browser download of the saved clip so a copy also
-     * lands on the phone itself (Chrome on Android saves it to the
-     * Downloads folder). Note: this is the closest a web page can get to
-     * "save to gallery" — whether it also shows up inside the Photos/
-     * Gallery app depends on the phone, since some gallery apps only index
-     * DCIM/Movies folders and some don't preview .webm thumbnails at all.
-     */
     downloadRecording(blob, timestamp) {
       try {
         const d = new Date(timestamp);
@@ -991,7 +958,6 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
-        // Give the browser a moment to start the download before revoking.
         setTimeout(() => URL.revokeObjectURL(downloadUrl), 4000);
       } catch (err) {
         console.error('Auto-download failed', err);
@@ -999,7 +965,6 @@
       }
     },
 
-    /** Optional auto-delete of the oldest recording if storage is nearly full. */
     async enforceStorageBudget() {
       const est = await DB.estimate();
       if (!est || !est.quota) return;
@@ -1013,7 +978,6 @@
       }
     },
 
-    /* ---------- RECENT LIST + PLAYBACK ---------- */
     async refreshRecentList() {
       const list = document.getElementById('recent-list');
       const emptyMsg = document.getElementById('recent-empty');
