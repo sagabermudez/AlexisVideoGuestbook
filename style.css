@@ -1,7 +1,5 @@
 /* =================================================================
    THE GUESTBOOK — luxury wedding video guestbook
-   Design tokens are exposed as CSS custom properties so the Admin
-   panel can rewrite them at runtime (see script.js → Theme module).
    ================================================================= */
 
 :root {
@@ -14,7 +12,7 @@
   --color-gold-light: #ecd9ad;
   --color-gold-dim: #8a733f;
 
-  /* --- runtime-adjustable theme (defaults; overwritten by admin) --- */
+  /* --- runtime-adjustable theme --- */
   --accent: var(--color-gold);
   --btn-color: var(--color-gold);
   --radius: 18px;
@@ -27,20 +25,17 @@
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-body: 'Poppins', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  --vh: 1vh; /* corrected via JS for mobile browser chrome */
+  --vh: 1vh;
 }
 
-/* -------------------------------------------------------------- */
-/* Reset & base                                                    */
-/* -------------------------------------------------------------- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;               /* kiosk: disable page scroll/bounce */
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   background: var(--color-black);
   color: var(--color-ivory);
   font-family: var(--font-body);
@@ -62,7 +57,10 @@ img, video { -webkit-user-drag: none; }
 /* -------------------------------------------------------------- */
 .screen {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   opacity: 0;
@@ -79,9 +77,6 @@ img, video { -webkit-user-drag: none; }
   z-index: 5;
 }
 
-/* -------------------------------------------------------------- */
-/* Glassmorphism helper                                            */
-/* -------------------------------------------------------------- */
 .glass {
   background: rgba(26, 26, 30, 0.55);
   backdrop-filter: blur(18px) saturate(140%);
@@ -90,9 +85,6 @@ img, video { -webkit-user-drag: none; }
   box-shadow: 0 20px 60px rgba(0,0,0,0.45);
 }
 
-/* -------------------------------------------------------------- */
-/* Buttons                                                         */
-/* -------------------------------------------------------------- */
 .btn {
   border: none;
   cursor: pointer;
@@ -123,7 +115,6 @@ img, video { -webkit-user-drag: none; }
 }
 .btn-small { padding: 10px 18px; font-size: 13px; margin-top: 8px; }
 
-/* ripple effect */
 .btn::after {
   content: "";
   position: absolute;
@@ -155,16 +146,32 @@ img, video { -webkit-user-drag: none; }
 }
 
 /* =================================================================
-   HOME SCREEN
+   HOME SCREEN - FULL EDGE-TO-EDGE
    ================================================================= */
-.bg-layer { position: absolute; inset: 0; z-index: 0; }
+.bg-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
 .bg-media {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 .bg-overlay {
-  position: absolute; inset: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(var(--overlay-color-rgb), var(--overlay-opacity));
 }
 
@@ -250,7 +257,6 @@ img, video { -webkit-user-drag: none; }
   color: rgba(250,247,242,0.5);
 }
 
-/* Recent recordings */
 .recent-section {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -438,7 +444,7 @@ img, video { -webkit-user-drag: none; }
 .save-note.show { opacity: 1; }
 
 /* =================================================================
-   CALL SCREEN (greeting + countdown)
+   CALL SCREEN
    ================================================================= */
 .call-backdrop {
   position: absolute; inset: 0;
@@ -509,16 +515,12 @@ img, video { -webkit-user-drag: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000; /* letterbox bars when the capture ratio doesn't fill the screen */
+  background: #000;
 }
 .camera-preview {
-  /* No forced width/height: the video sizes itself from its own intrinsic
-     stream resolution (the aspect ratio requested via getUserMedia),
-     capped to the screen — same letterboxing behaviour as a native
-     camera app's viewfinder rather than a stretched full-bleed crop. */
   max-width: 100%;
   max-height: 100%;
-  transform: scaleX(-1); /* mirrored preview only */
+  transform: scaleX(-1);
   background: #000;
 }
 .recording-vignette {
@@ -654,7 +656,8 @@ img, video { -webkit-user-drag: none; }
 }
 
 /* =================================================================
-   Toast + modal                                                    */
+   Toast + modal
+   ================================================================= */
 .toast {
   position: fixed;
   top: max(16px, env(safe-area-inset-top));
@@ -689,18 +692,15 @@ img, video { -webkit-user-drag: none; }
 .modal-actions { display: flex; gap: 12px; }
 .modal-actions .btn { flex: 1; }
 
-/* -------------------------------------------------------------- */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
-/* Focus visibility for accessibility (kept subtle for kiosk use) */
 button:focus-visible, input:focus-visible, select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
