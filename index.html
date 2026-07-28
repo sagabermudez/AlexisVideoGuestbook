@@ -21,7 +21,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <!-- ============================================================
-     GENERIC CONFIRM MODAL (used for delete confirmations, etc.)
+     GENERIC CONFIRM MODAL
      ============================================================ -->
 <div id="confirm-modal" class="modal-overlay hidden">
   <div class="modal glass">
@@ -39,7 +39,7 @@
 <section id="screen-home" class="screen active" data-screen="home">
   <div class="bg-layer">
     <img id="home-bg-image" class="bg-media" alt="" />
-    <video id="home-bg-video" class="bg-media hidden" muted loop playsinline></video>
+    <video id="home-bg-video" class="bg-media hidden" muted loop playsinline disablepictureinpicture></video>
     <div id="home-overlay" class="bg-overlay"></div>
   </div>
 
@@ -66,19 +66,17 @@
       <span id="storage-estimate" class="storage-pill"></span>
     </div>
     <div id="recent-list" class="recent-list">
-      <!-- Recording cards injected here -->
       <p id="recent-empty" class="recent-empty">No messages yet &mdash; be the first to say something lovely.</p>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SCREEN 2 — ADMIN (login + settings panel)
+     SCREEN 2 — ADMIN
      ============================================================ -->
 <section id="screen-admin" class="screen" data-screen="admin">
   <div class="admin-scrim"></div>
 
-  <!-- Login gate -->
   <div id="admin-login" class="admin-login glass">
     <h2>Admin Access</h2>
     <p class="muted">Enter the password to customize this guestbook.</p>
@@ -91,7 +89,6 @@
     <p class="muted small">First time here? Leave blank and tap Unlock to set a password.</p>
   </div>
 
-  <!-- Settings panel -->
   <div id="admin-panel" class="admin-panel hidden">
     <header class="admin-header">
       <h2>Guestbook Settings</h2>
@@ -110,8 +107,6 @@
     </div>
 
     <div class="admin-body">
-
-      <!-- Background settings -->
       <div class="admin-pane active" data-pane="background">
         <label class="field-label">Background Image</label>
         <input type="file" id="input-bg-image" accept="image/*" class="file-input" />
@@ -127,7 +122,6 @@
         <input type="color" id="input-overlay-color" class="color-input" />
       </div>
 
-      <!-- Audio greeting settings -->
       <div class="admin-pane" data-pane="audio">
         <label class="field-label">Greeting Audio (MP3, WAV, or OGG)</label>
         <input type="file" id="input-greeting-audio" accept="audio/mpeg,audio/wav,audio/ogg,.mp3,.wav,.ogg" class="file-input" />
@@ -136,7 +130,6 @@
         <p class="muted small">Example: &ldquo;Hello! Thank you for celebrating with us. Please leave your message after the beep.&rdquo;</p>
       </div>
 
-      <!-- Countdown settings -->
       <div class="admin-pane" data-pane="countdown">
         <label class="field-label">Countdown Duration (seconds) <span id="countdown-duration-value"></span></label>
         <input type="range" id="input-countdown-duration" min="3" max="10" step="1" class="slider" />
@@ -154,7 +147,6 @@
         <input type="color" id="input-countdown-color" class="color-input" />
       </div>
 
-      <!-- Recording settings -->
       <div class="admin-pane" data-pane="recording">
         <label class="field-label">Video Screen Ratio</label>
         <select id="input-aspect-ratio" class="select-input">
@@ -163,10 +155,9 @@
           <option value="1:1">Square — 1:1</option>
           <option value="4:3">Standard — 4:3</option>
         </select>
-        <p class="muted small">Sets the shape the camera captures in. The recording screen letterboxes to match, like a native camera app. Applies the next time a guest records.</p>
+        <p class="muted small">Sets the shape the camera captures in.</p>
       </div>
 
-      <!-- Theme settings -->
       <div class="admin-pane" data-pane="theme">
         <label class="field-label">Accent Color</label>
         <input type="color" id="input-accent-color" class="color-input" />
@@ -185,14 +176,12 @@
         <input type="range" id="input-radius" min="0" max="32" step="2" class="slider" />
       </div>
 
-      <!-- Password settings -->
       <div class="admin-pane" data-pane="password">
         <label class="field-label">New Admin Password</label>
         <input type="password" id="input-new-password" class="text-input" placeholder="Leave blank for no password" />
         <button id="btn-save-password" class="btn btn-primary btn-small">Save Password</button>
         <p class="muted small">This password protects the settings screen only.</p>
       </div>
-
     </div>
 
     <footer class="admin-footer">
@@ -203,7 +192,7 @@
 </section>
 
 <!-- ============================================================
-     SCREEN 3 — CALL (greeting + countdown)
+     SCREEN 3 — CALL
      ============================================================ -->
 <section id="screen-call" class="screen" data-screen="call">
   <div class="call-backdrop"></div>
@@ -225,7 +214,7 @@
      ============================================================ -->
 <section id="screen-recording" class="screen" data-screen="recording">
   <div class="recording-frame">
-    <video id="camera-preview" class="camera-preview" autoplay muted playsinline></video>
+    <video id="camera-preview" class="camera-preview" autoplay muted playsinline disablepictureinpicture></video>
   </div>
   <div class="recording-vignette"></div>
 
@@ -243,7 +232,7 @@
 </section>
 
 <!-- ============================================================
-     SCREEN 5 — FINISH (video saved / choose to keep or redo)
+     SCREEN 5 — FINISH
      ============================================================ -->
 <section id="screen-finish" class="screen" data-screen="finish">
   <div class="finish-content glass">
@@ -251,7 +240,7 @@
       <svg viewBox="0 0 24 24" width="34" height="34"><path fill="currentColor" d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
     </div>
     <h2>Video Saved!</h2>
-    <video id="finish-preview" class="finish-video" playsinline muted loop></video>
+    <video id="finish-preview" class="finish-video" playsinline muted loop disablepictureinpicture></video>
     <div class="finish-actions">
       <button id="btn-record-again" class="btn btn-ghost">Record Again</button>
       <button id="btn-use-video" class="btn btn-primary">Use This Video</button>
@@ -260,7 +249,7 @@
 </section>
 
 <!-- ============================================================
-     SCREEN 6 — PLAYBACK (viewing a saved recording)
+     SCREEN 6 — PLAYBACK
      ============================================================ -->
 <section id="screen-playback" class="screen" data-screen="playback">
   <div class="playback-header">
@@ -272,7 +261,7 @@
       <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M6 7h12l-1 14H7L6 7zm3-4h6l1 2h4v2H2V5h4l1-2z"/></svg>
     </button>
   </div>
-  <video id="playback-video" class="playback-video" controls playsinline></video>
+  <video id="playback-video" class="playback-video" controls playsinline disablepictureinpicture></video>
 </section>
 
 <script src="script.js"></script>
