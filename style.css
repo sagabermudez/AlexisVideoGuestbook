@@ -257,6 +257,7 @@ img, video { -webkit-user-drag: none; }
   z-index: 2;
   padding: 18px 20px max(18px, env(safe-area-inset-bottom));
   background: linear-gradient(to top, rgba(8,8,9,0.85), rgba(8,8,9,0));
+  padding-bottom: 50px
 }
 .recent-header {
   display: flex;
