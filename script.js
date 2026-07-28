@@ -336,10 +336,21 @@
     stream: null,
 
     async start() {
+      // Explicit audio constraints matter a lot here: leaving audio as a
+      // bare `true` lets the browser fall back to defaults that can sound
+      // thin or inconsistent. Requesting these specifically asks for a
+      // clean, well-leveled voice recording.
+      const audioConstraints = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 48000
+      };
       const constraintSets = [
-        { video: { facingMode: { exact: 'user' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: true },
-        { video: { facingMode: 'user' }, audio: true },
-        { video: { facingMode: { exact: 'environment' } }, audio: true },
+        { video: { facingMode: { exact: 'user' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: audioConstraints },
+        { video: { facingMode: 'user' }, audio: audioConstraints },
+        { video: { facingMode: { exact: 'environment' } }, audio: audioConstraints },
         { video: true, audio: true }
       ];
       let lastErr = null;
@@ -383,7 +394,17 @@
     start(stream, onTick) {
       this.chunks = [];
       const mimeType = this.pickMimeType();
-      this.mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      // Setting explicit bitrates stops the browser from auto-balancing a
+      // shared bitrate budget between video and audio — without this, a
+      // high video resolution can quietly starve the audio track and make
+      // voices sound compressed or muffled. 128kbps opus is solid, clear
+      // voice quality; 2.5mbps video is plenty for a guestbook clip.
+      const options = {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 128000,
+        videoBitsPerSecond: 2500000
+      };
+      this.mediaRecorder = new MediaRecorder(stream, options);
       this.mediaRecorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) this.chunks.push(e.data);
       };
