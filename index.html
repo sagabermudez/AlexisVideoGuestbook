@@ -104,6 +104,7 @@
       <button class="admin-tab active" data-tab="background">Background</button>
       <button class="admin-tab" data-tab="audio">Greeting</button>
       <button class="admin-tab" data-tab="countdown">Countdown</button>
+      <button class="admin-tab" data-tab="recording">Recording</button>
       <button class="admin-tab" data-tab="theme">Theme</button>
       <button class="admin-tab" data-tab="password">Password</button>
     </div>
@@ -151,6 +152,18 @@
 
         <label class="field-label">Countdown Color</label>
         <input type="color" id="input-countdown-color" class="color-input" />
+      </div>
+
+      <!-- Recording settings -->
+      <div class="admin-pane" data-pane="recording">
+        <label class="field-label">Video Screen Ratio</label>
+        <select id="input-aspect-ratio" class="select-input">
+          <option value="9:16">Portrait — 9:16 (phone, full screen)</option>
+          <option value="16:9">Landscape — 16:9 (widescreen)</option>
+          <option value="1:1">Square — 1:1</option>
+          <option value="4:3">Standard — 4:3</option>
+        </select>
+        <p class="muted small">Sets the shape the camera captures in. The recording screen letterboxes to match, like a native camera app. Applies the next time a guest records.</p>
       </div>
 
       <!-- Theme settings -->
@@ -211,7 +224,9 @@
      SCREEN 4 — RECORDING
      ============================================================ -->
 <section id="screen-recording" class="screen" data-screen="recording">
-  <video id="camera-preview" class="camera-preview" autoplay muted playsinline></video>
+  <div class="recording-frame">
+    <video id="camera-preview" class="camera-preview" autoplay muted playsinline></video>
+  </div>
   <div class="recording-vignette"></div>
 
   <div class="rec-indicator">

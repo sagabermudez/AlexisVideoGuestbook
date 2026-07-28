@@ -63,9 +63,13 @@ Two caveats worth knowing:
 - Admin-configured settings (background, greeting audio, countdown, theme, password) are stored separately in `localStorage` as JSON, since they're simple key/value settings rather than large binary blobs.
 - Storage headroom is checked with `navigator.storage.estimate()`; if usage climbs above ~92% of the browser's quota, the single oldest recording is automatically deleted to make room for the next guest (this is the optional "auto-delete oldest" behavior from the brief).
 
-## 6. Notes on landscape recording while the phone stays in portrait
+## 6. Recording quality: raw audio, high bitrate, selectable aspect ratio
 
-The brief asks for landscape video while the phone is held in portrait. The app requests a 16:9 (`1920×1080` ideal) camera resolution to bias toward a landscape-shaped recording, but the final orientation/aspect ratio of the saved file is ultimately decided by the phone's camera hardware and Chrome's own auto-rotation handling — this isn't something a web page can fully force on every device. If a specific phone model still records portrait-shaped video, mounting the phone itself in a landscape kiosk cradle is the most reliable fix.
+- **Audio is captured raw** — `echoCancellation`, `noiseSuppression`, and `autoGainControl` are all explicitly turned off, so the mic feed isn't run through the browser's voice-call-style processing. This matches how a native camera app records (unprocessed), rather than the "cleaned up" sound typical of video-call audio.
+- **Bitrate is set high** — `videoBitsPerSecond: 16000000` (16 Mbps) and `audioBitsPerSecond: 256000` (256 kbps), both explicit on `MediaRecorder` so the browser can't quietly trade one off against the other. This is in the range of what a phone's native camera app records 1080p video at. The actual encoded bitrate is still capped by whatever the device's hardware encoder can sustain — this is a ceiling/request, not a hard guarantee on every phone.
+- **Aspect ratio is admin-selectable** — the Admin → Recording tab lets you choose Portrait (9:16), Landscape (16:9), Square (1:1), or Standard (4:3). This is requested from the camera via `getUserMedia`'s `width`/`height`/`aspectRatio` constraints (as *ideal*, so it still falls back gracefully on hardware that can't hit it exactly), and the Recording screen letterboxes the live preview to match whatever the camera actually returns — the same way a native camera app's viewfinder shows black bars rather than stretching or cropping the image to fill the whole screen.
+
+Regarding the brief's original ask for landscape video while the phone stays in portrait: selecting **16:9** in Admin → Recording gets you there, with the same caveat as before — the final file's exact orientation still depends on the phone's camera hardware and Chrome's own auto-rotation handling, which isn't something a web page can fully override on every device. If a specific phone still records portrait-shaped video regardless, mounting the phone itself in a landscape kiosk cradle is the most reliable fix.
 
 ## 7. Auto-download on save
 

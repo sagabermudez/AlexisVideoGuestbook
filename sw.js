@@ -5,7 +5,7 @@
    between events. Recordings themselves live in IndexedDB, not here.
    ================================================================= */
 
-const CACHE_NAME = 'guestbook-shell-v2';
+const CACHE_NAME = 'guestbook-shell-v3';
 const SHELL_FILES = [
   './', './index.html', './style.css', './script.js',
   './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png'

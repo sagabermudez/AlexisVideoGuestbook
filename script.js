@@ -147,6 +147,7 @@
     buttonColor: '#c9a15a',
     fontChoice: 'playfair',
     radius: 18,
+    videoAspectRatio: '9:16',   // '9:16' | '16:9' | '1:1' | '4:3'
     eyebrow: 'Forever begins today',
     title: 'The Guestbook',
     subtitle: 'Pick up the phone and leave us a memory to keep'
@@ -332,25 +333,44 @@
   /* ================================================================
      CAMERA — getUserMedia handling with front->rear fallback
      ================================================================ */
+
+  // Target capture resolution for each admin-selectable aspect ratio.
+  // These are requested as *ideal*, not exact, so the browser still falls
+  // back gracefully on hardware that can't hit them.
+  const ASPECT_RESOLUTIONS = {
+    '9:16': { width: 1080, height: 1920, ratio: 9 / 16 },
+    '16:9': { width: 1920, height: 1080, ratio: 16 / 9 },
+    '1:1': { width: 1080, height: 1080, ratio: 1 },
+    '4:3': { width: 1440, height: 1080, ratio: 4 / 3 }
+  };
+
   const Camera = {
     stream: null,
 
     async start() {
-      // Explicit audio constraints matter a lot here: leaving audio as a
-      // bare `true` lets the browser fall back to defaults that can sound
-      // thin or inconsistent. Requesting these specifically asks for a
-      // clean, well-leveled voice recording.
+      // Raw audio, no processing — a bare mic feed just like a native
+      // camera app records, rather than the browser's voice-call-style
+      // cleanup (which can sound processed/artificial on playback).
       const audioConstraints = {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-        channelCount: 1,
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+        channelCount: 2,
         sampleRate: 48000
       };
+
+      const aspectKey = (Settings.data && Settings.data.videoAspectRatio) || '9:16';
+      const res = ASPECT_RESOLUTIONS[aspectKey] || ASPECT_RESOLUTIONS['9:16'];
+      const videoBase = {
+        width: { ideal: res.width },
+        height: { ideal: res.height },
+        aspectRatio: { ideal: res.ratio }
+      };
+
       const constraintSets = [
-        { video: { facingMode: { exact: 'user' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: audioConstraints },
-        { video: { facingMode: 'user' }, audio: audioConstraints },
-        { video: { facingMode: { exact: 'environment' } }, audio: audioConstraints },
+        { video: { ...videoBase, facingMode: { exact: 'user' } }, audio: audioConstraints },
+        { video: { ...videoBase, facingMode: 'user' }, audio: audioConstraints },
+        { video: { ...videoBase, facingMode: { exact: 'environment' } }, audio: audioConstraints },
         { video: true, audio: true }
       ];
       let lastErr = null;
@@ -394,15 +414,15 @@
     start(stream, onTick) {
       this.chunks = [];
       const mimeType = this.pickMimeType();
-      // Setting explicit bitrates stops the browser from auto-balancing a
-      // shared bitrate budget between video and audio — without this, a
-      // high video resolution can quietly starve the audio track and make
-      // voices sound compressed or muffled. 128kbps opus is solid, clear
-      // voice quality; 2.5mbps video is plenty for a guestbook clip.
+      // Bitrates pushed close to what a native camera app records at
+      // (roughly what a phone shoots 1080p video at, and well above the
+      // "safe" web-call defaults browsers otherwise apply). Actual
+      // encoded bitrate is still capped by whatever the device's hardware
+      // encoder can sustain, so this is a ceiling/request, not a guarantee.
       const options = {
         ...(mimeType ? { mimeType } : {}),
-        audioBitsPerSecond: 128000,
-        videoBitsPerSecond: 2500000
+        audioBitsPerSecond: 256000,
+        videoBitsPerSecond: 16000000
       };
       this.mediaRecorder = new MediaRecorder(stream, options);
       this.mediaRecorder.ondataavailable = (e) => {
@@ -500,6 +520,7 @@
       this.wireBackground();
       this.wireAudio();
       this.wireCountdown();
+      this.wireRecordingSettings();
       this.wireTheme();
       this.wirePassword();
     },
@@ -554,6 +575,8 @@
       document.getElementById('input-countdown-fontsize').value = d.countdownFontSize;
       document.getElementById('countdown-fontsize-value').textContent = d.countdownFontSize + 'px';
       document.getElementById('input-countdown-color').value = d.countdownColor;
+
+      document.getElementById('input-aspect-ratio').value = d.videoAspectRatio;
 
       document.getElementById('input-accent-color').value = d.accentColor;
       document.getElementById('input-button-color').value = d.buttonColor;
@@ -647,6 +670,13 @@
       });
       document.getElementById('input-countdown-color').addEventListener('input', (e) => {
         Settings.set('countdownColor', e.target.value);
+      });
+    },
+
+    wireRecordingSettings() {
+      document.getElementById('input-aspect-ratio').addEventListener('change', (e) => {
+        Settings.set('videoAspectRatio', e.target.value);
+        Utils.toast('New aspect ratio applies on the next recording.');
       });
     },
 
