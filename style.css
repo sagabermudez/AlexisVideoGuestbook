@@ -57,12 +57,12 @@ img, video { -webkit-user-drag: none; }
 /* -------------------------------------------------------------- */
 .screen {
   position: fixed;
-  top: 0;
+  top: 10%;
   left: 0;
   right: 0;
   bottom: 0;
   width: 100%;
-  height: 100%;
+  height: 85%;
   opacity: 0;
   pointer-events: none;
   transform: scale(1.02);
